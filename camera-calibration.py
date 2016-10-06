@@ -196,10 +196,10 @@ def CameraCalibration() :
 #	flags |= cv2.CALIB_FIX_PRINCIPAL_POINT
 #	flags |= cv2.CALIB_FIX_ASPECT_RATIO
 #	flags |= cv2.CALIB_ZERO_TANGENT_DIST
-	flags |= cv2.CALIB_RATIONAL_MODEL
+#	flags |= cv2.CALIB_RATIONAL_MODEL
 #	flags |= cv2.CALIB_FIX_K3
-	flags |= cv2.CALIB_FIX_K4
-	flags |= cv2.CALIB_FIX_K5
+#	flags |= cv2.CALIB_FIX_K4
+#	flags |= cv2.CALIB_FIX_K5
 	# Camera calibration
 	calibration = cv2.calibrateCamera( obj_points, img_points, img_size, None, None, flags=flags )
 	# Store the calibration results in a dictionary
@@ -232,6 +232,8 @@ def CameraCalibration() :
 	# Write the calibration object with all the parameters
 	with open( 'calibration.pkl' , 'wb') as output_file :
 		pickle.dump( calibration, output_file, pickle.HIGHEST_PROTOCOL )
+	# Write the calibration result in numpy arrays
+	np.savez( "calibration", ret=calibration['calib_error'], mtx=calibration['camera_matrix'], dist=calibration['dist_coefs'], rvecs=calibration['rvecs'], tvecs=calibration['tvecs'])
 
 
 # Main application
