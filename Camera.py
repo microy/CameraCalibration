@@ -14,7 +14,7 @@ class UsbCamera( threading.Thread ) :
 	def __init__( self ) :
 		# Initialize the thread
 		super( UsbCamera, self ).__init__()
-		# Initialize the cameras
+		# Initialize the camera
 		self.camera = cv2.VideoCapture( 0 )
 	# Return the image width
 	@property
@@ -40,8 +40,8 @@ class UsbCamera( threading.Thread ) :
 		# Thread running
 		while self.running :
 			# Capture image
-			_, image = self.camera.read()
+			_, self.image = self.camera.read()
 			# Send the image via the external callback function
-			self.image_callback( image )
+			self.image_callback()
 		# Release the cameras
 		self.camera.release()

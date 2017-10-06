@@ -16,6 +16,7 @@ import numpy as np
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
+import Camera
 from Camera import UsbCamera
 
 
@@ -79,16 +80,14 @@ class CameraCalibrationWidget( QtWidgets.QWidget ) :
 		self.image_widget.setFixedSize( self.camera.width, self.camera.height )
 		# Start image acquisition
 		self.camera.StartCapture(  self.ImageCallback  )
-	# Receive the frame sent by the camera
-	def ImageCallback( self, image ) :
-		# Get the image
-		self.image = image
+	# A new image is sent by the camera
+	def ImageCallback( self ) :
 		# Process the image
 		self.update_image.emit()
 	# Process and display the given image
 	def UpdateImage( self ) :
 		# Copy images for display
-		image_displayed = np.copy( self.image )
+		image_displayed = np.copy( self.camera.image )
 		# Preview the calibration chessboard on the image
 		if self.chessboard_enabled :
 			image_displayed = PreviewChessboard( image_displayed )
