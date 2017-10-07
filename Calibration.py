@@ -5,15 +5,14 @@
 #
 
 # External dependencies
+import glob
 import math
 import pickle
 import cv2
 import numpy as np
 
-
 # Calibration pattern size
 pattern_size = ( 9, 6 )
-
 
 # Find the chessboard quickly, and draw it
 def PreviewChessboard( image ) :
@@ -27,9 +26,10 @@ def PreviewChessboard( image ) :
 	# Return the image with the chessboard if found
 	return image
 
-
 # Camera calibration
-def CameraCalibration( image_files ) :
+def CameraCalibration() :
+	# Calibration image files
+	image_files = sorted( glob.glob( 'camera-*.png' ) )
 	# Chessboard pattern
 	pattern_points = np.zeros( (np.prod(pattern_size), 3), np.float32 )
 	pattern_points[:,:2] = np.indices(pattern_size).T.reshape(-1, 2)
