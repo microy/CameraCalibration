@@ -15,8 +15,7 @@ from PyQt5 import QtWidgets
 import Camera
 import Calibration
 
-
-# User interface
+# Main window
 class CameraCalibrationWidget( QtWidgets.QWidget ) :
 	# Signal sent to update the image in the widget
 	update_image = QtCore.pyqtSignal()
@@ -26,10 +25,6 @@ class CameraCalibrationWidget( QtWidgets.QWidget ) :
 		super( CameraCalibrationWidget, self ).__init__( parent )
 		# Set the window title
 		self.setWindowTitle( 'Camera Calibration' )
-		# Initialize the viewing parameters
-		self.chessboard_enabled = False
-		# Connect the signal to update the image
-		self.update_image.connect( self.UpdateImage )
 		# Widget to display the image from the camera
 		self.image_widget = QtWidgets.QLabel( self )
 		self.image_widget.setScaledContents( True )
@@ -66,34 +61,36 @@ class CameraCalibrationWidget( QtWidgets.QWidget ) :
 		self.layout_global.setSizeConstraint( QtWidgets.QLayout.SetFixedSize )
 		# Set the Escape key to close the application
 		QtWidgets.QShortcut( QtGui.QKeySequence( QtCore.Qt.Key_Escape ), self ).activated.connect( self.close )
+		# Connect the signal to update the image
+		self.update_image.connect( self.UpdateImage )
 		# Initialize the camera
 		self.camera = Camera.UsbCamera()
 		# Fix the widget size
 		self.image_widget.setFixedSize( self.camera.width, self.camera.height )
 		# Create a QImage to store and display the image from the camera
 		self.qimage = QtGui.QImage( self.camera.width, self.camera.height, QtGui.QImage.Format_RGB888 )
+		# Widget to display the chessboard on the image
+		self.chessboard_preview = ChessboardPreview( self, self.camera.width, self.camera.height )
 		# Start image acquisition
 		self.camera.StartCapture(  self.ImageCallback  )
 	# A new image is sent by the camera
 	def ImageCallback( self ) :
 		# Copy the camera image
 		self.image = np.copy( self.camera.image )
-		# Process the image
+		# Display the image
 		self.update_image.emit()
+		# Preview the calibration chessboard on the image
+		if self.button_chessboard.isChecked() :
+			self.chessboard_preview.update_image.emit()
 	# Process and display the given image
 	def UpdateImage( self ) :
-		# Copy images for display
-		image_displayed = np.copy( self.image )
-		# Preview the calibration chessboard on the image
-		if self.chessboard_enabled :
-			image_displayed = Calibration.PreviewChessboard( image_displayed )
 		# Convert image color format from BGR to RGB
-		image_displayed = cv2.cvtColor( image_displayed, cv2.COLOR_BGR2RGB )
+		image = cv2.cvtColor( self.image, cv2.COLOR_BGR2RGB )
 		# Get the pointer of the Qt image data
 		qimage_pointer = self.qimage.bits()
-		qimage_pointer.setsize( image_displayed.size )
+		qimage_pointer.setsize( image.size )
 		# Copy the camera image in the Qt image
-		qimage_pointer[ 0 : image_displayed.size ] = image_displayed[ 0 : image_displayed.size ]
+		qimage_pointer[ 0 : image.size ] = image[ 0 : image.size ]
 		# Set the image to the Qt widget
 		self.image_widget.setPixmap( QtGui.QPixmap.fromImage( self.qimage ) )
 		# Update the widget
@@ -113,7 +110,8 @@ class CameraCalibrationWidget( QtWidgets.QWidget ) :
 		self.button_calibration.setEnabled( True )
 	# Toggle the chessboard preview
 	def ToggleChessboard( self ) :
-		self.chessboard_enabled = not self.chessboard_enabled
+		if self.button_chessboard.isChecked() : self.chessboard_preview.show()
+		else : self.chessboard_preview.hide()
 	# Save the image
 	def Capture( self ) :
 		current_time = time.strftime( '%Y%m%d_%H%M%S' )
@@ -126,5 +124,50 @@ class CameraCalibrationWidget( QtWidgets.QWidget ) :
 	def closeEvent( self, event ) :
 		# Stop image acquisition
 		self.camera.StopCapture()
+		# Close the chessboard preview window
+		self.chessboard_preview.close()
+		# Close main application
+		event.accept()
+
+# Chessboard preview window
+class ChessboardPreview( QtWidgets.QLabel ) :
+	# Signal sent to update the image in the widget
+	update_image = QtCore.pyqtSignal()
+	# Initialization
+	def __init__( self, parent, width, height ) :
+		# Initialise QLabel
+		super( ChessboardPreview, self ).__init__()
+		# Register the main window
+		self.parent = parent
+		# Set the window title
+		self.setWindowTitle( 'Chessboard detection preview' )
+		# Connect the signal to update the image
+		self.update_image.connect( self.UpdateImage )
+		# Set the widget size
+		self.setScaledContents( True )
+		self.setFixedSize( width, height )
+		# Create a QImage to store and display the image from the camera
+		self.qimage = QtGui.QImage( width, height, QtGui.QImage.Format_RGB888 )
+		# Set the Escape key to close the application
+		QtWidgets.QShortcut( QtGui.QKeySequence( QtCore.Qt.Key_Escape ), self ).activated.connect( self.close )
+	# Detect the chessboard on the image and display the result
+	def UpdateImage( self ) :
+		# Preview the calibration chessboard on the image
+		image = Calibration.PreviewChessboard( self.parent.image )
+		# Convert image color format from BGR to RGB
+		image = cv2.cvtColor( image, cv2.COLOR_BGR2RGB )
+		# Get the pointer of the Qt image data
+		qimage_pointer = self.qimage.bits()
+		qimage_pointer.setsize( image.size )
+		# Copy the camera image in the Qt image
+		qimage_pointer[ 0 : image.size ] = image[ 0 : image.size ]
+		# Set the image to the Qt widget
+		self.setPixmap( QtGui.QPixmap.fromImage( self.qimage ) )
+		# Update the widget
+		self.update()
+	# Close the widget
+	def closeEvent( self, event ) :
+		# Tell the parent this window is closed
+		self.parent.button_chessboard.setChecked( False )
 		# Close main application
 		event.accept()
