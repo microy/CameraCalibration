@@ -98,11 +98,11 @@ class CameraCalibrationWidget( QtWidgets.QWidget ) :
 	# Camera calibration
 	def Calibration( self ) :
 		# Calibrate the camera
-		try : Calibration.CameraCalibration()
-		# Calibration failed
-		except : QtWidgets.QMessageBox.warning( self, "Camera calibration", "Camera calibration failed !" )
+		calibration_successful = Calibration.CameraCalibration()
 		# Calibration done
-		else : QtWidgets.QMessageBox.information( self, "Camera calibration", "Camera calibration done !" )
+		if calibration_successful : QtWidgets.QMessageBox.information( self, "Camera calibration", "Camera calibration done !" )
+		# Calibration failed
+		else : QtWidgets.QMessageBox.warning( self, "Camera calibration", "Camera calibration failed !" )
 	# Toggle the chessboard preview
 	def ToggleChessboard( self ) :
 		if self.button_chessboard.isChecked() : self.chessboard_preview.show()

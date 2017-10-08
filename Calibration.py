@@ -80,6 +80,10 @@ def CameraCalibration() :
 		img_points.append( corners.reshape(-1, 2) )
 		obj_points.append( pattern_points )
 		img_files.append( filename )
+	# Abort if no chessboard has been found
+	if not img_files :
+		print( 'Camera calibration aborted. No chessboard found...' )
+		return False
 	# Camera calibration flags
 	flags  = 0
 #	flags |= cv2.CALIB_USE_INTRINSIC_GUESS
@@ -122,3 +126,5 @@ def CameraCalibration() :
 	# Write the calibration object with all the parameters
 	with open( 'calibration.pkl' , 'wb') as output_file :
 		pickle.dump( calibration, output_file, pickle.HIGHEST_PROTOCOL )
+	# Camera calibration successful
+	return True
