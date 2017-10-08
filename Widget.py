@@ -122,6 +122,7 @@ class CameraCalibrationWidget( QtWidgets.QWidget ) :
 		Calibration.pattern_size = ( self.spinbox_pattern_rows.value(), self.spinbox_pattern_cols.value() )
 	# Close the widget
 	def closeEvent( self, event ) :
+		#FIXME: Wait for the calibration to be done...
 		# Stop image acquisition
 		self.camera.StopCapture()
 		# Close the chessboard preview window
