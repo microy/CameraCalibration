@@ -13,7 +13,6 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 import Camera
-from Camera import UsbCamera
 import Calibration
 
 
@@ -68,7 +67,7 @@ class CameraCalibrationWidget( QtWidgets.QWidget ) :
 		# Set the Escape key to close the application
 		QtWidgets.QShortcut( QtGui.QKeySequence( QtCore.Qt.Key_Escape ), self ).activated.connect( self.close )
 		# Initialize the camera
-		self.camera = UsbCamera()
+		self.camera = Camera.UsbCamera()
 		# Fix the widget size
 		self.image_widget.setFixedSize( self.camera.width, self.camera.height )
 		# Start image acquisition
@@ -94,6 +93,19 @@ class CameraCalibrationWidget( QtWidgets.QWidget ) :
 		self.image_widget.setPixmap( QtGui.QPixmap.fromImage( qimage ) )
 		# Update the widget
 		self.image_widget.update()
+	# Camera calibration
+	def Calibration( self ) :
+		# Disable the calibration button
+		self.button_calibration.setDisabled( True )
+		# Start the calibration thread
+		Calibration.CalibrationThread( self.CalibrationDone ).start()
+	# Camera calibration callback
+	def CalibrationDone( self, successful ) :
+		# Display a message box
+		if successful :	QtWidgets.QMessageBox.information( self, "Camera calibration", "Camera calibration done !" )
+		else : QtWidgets.QMessageBox.warning( self, "Camera calibration", "Camera calibration failed !" )
+		# Enable the calibration button
+		self.button_calibration.setEnabled( True )
 	# Toggle the chessboard preview
 	def ToggleChessboard( self ) :
 		self.chessboard_enabled = not self.chessboard_enabled
@@ -102,13 +114,6 @@ class CameraCalibrationWidget( QtWidgets.QWidget ) :
 		current_time = time.strftime( '%Y%m%d_%H%M%S' )
 		print( 'Save images {} to disk...'.format( current_time ) )
 		cv2.imwrite( 'camera-{}.png'.format( current_time ), self.image )
-	# Camera calibration
-	def Calibration( self ) :
-		try :
-			Calibration.CameraCalibration()
-			print( 'Calibration done.' )
-		except :
-			print( 'Calibration failed...' )
 	# Update the calibration pattern size
 	def UpdatePatternSize( self, _ ) :
 		Calibration.pattern_size = ( self.spinbox_pattern_rows.value(), self.spinbox_pattern_cols.value() )
