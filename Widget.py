@@ -70,6 +70,8 @@ class CameraCalibrationWidget( QtWidgets.QWidget ) :
 		self.camera = Camera.UsbCamera()
 		# Fix the widget size
 		self.image_widget.setFixedSize( self.camera.width, self.camera.height )
+		# Create a QImage to store and display the image from the camera
+		self.qimage = QtGui.QImage( self.camera.width, self.camera.height, QtGui.QImage.Format_RGB888 )
 		# Start image acquisition
 		self.camera.StartCapture(  self.ImageCallback  )
 	# A new image is sent by the camera
@@ -87,10 +89,13 @@ class CameraCalibrationWidget( QtWidgets.QWidget ) :
 			image_displayed = Calibration.PreviewChessboard( image_displayed )
 		# Convert image color format from BGR to RGB
 		image_displayed = cv2.cvtColor( image_displayed, cv2.COLOR_BGR2RGB )
-		# Create a Qt image
-		qimage = QtGui.QImage( image_displayed, image_displayed.shape[1], image_displayed.shape[0], QtGui.QImage.Format_RGB888 )
+		# Get the pointer of the Qt image data
+		qimage_pointer = self.qimage.bits()
+		qimage_pointer.setsize( image_displayed.size )
+		# Copy the camera image in the Qt image
+		qimage_pointer[ 0 : image_displayed.size ] = image_displayed[ 0 : image_displayed.size ]
 		# Set the image to the Qt widget
-		self.image_widget.setPixmap( QtGui.QPixmap.fromImage( qimage ) )
+		self.image_widget.setPixmap( QtGui.QPixmap.fromImage( self.qimage ) )
 		# Update the widget
 		self.image_widget.update()
 	# Camera calibration
