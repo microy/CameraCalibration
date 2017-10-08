@@ -8,7 +8,6 @@
 import glob
 import math
 import pickle
-import threading
 import cv2
 import numpy as np
 
@@ -26,26 +25,6 @@ def PreviewChessboard( image ) :
 	if found : cv2.drawChessboardCorners( image, pattern_size, corners, found )
 	# Return the image with the chessboard if found
 	return image
-
-# Thread to calibrate the camera
-class CalibrationThread( threading.Thread ) :
-	# Initialisation
-	def __init__( self, calibration_done_callback ) :
-		# Initialize the thread
-		super( CalibrationThread, self ).__init__()
-		# Register the parent callback function
-		self.calibration_done = calibration_done_callback
-	# Thread main loop
-	def run( self ) :
-		try :
-			# Calibrate the camera
-			CameraCalibration()
-		except :
-			# Tell the parent the calibration has failed
-			self.calibration_done( False )
-		else :
-			# Tell the parent the calibration is done
-			self.calibration_done( True )
 
 # Camera calibration
 def CameraCalibration() :

@@ -97,17 +97,12 @@ class CameraCalibrationWidget( QtWidgets.QWidget ) :
 		self.image_widget.update()
 	# Camera calibration
 	def Calibration( self ) :
-		# Disable the calibration button
-		self.button_calibration.setDisabled( True )
-		# Start the calibration thread
-		Calibration.CalibrationThread( self.CalibrationDone ).start()
-	# Camera calibration callback
-	def CalibrationDone( self, successful ) :
-		# Display a message box
-		if successful :	QtWidgets.QMessageBox.information( self, "Camera calibration", "Camera calibration done !" )
-		else : QtWidgets.QMessageBox.warning( self, "Camera calibration", "Camera calibration failed !" )
-		# Enable the calibration button
-		self.button_calibration.setEnabled( True )
+		# Calibrate the camera
+		try : Calibration.CameraCalibration()
+		# Calibration failed
+		except : QtWidgets.QMessageBox.warning( self, "Camera calibration", "Camera calibration failed !" )
+		# Calibration done
+		else : QtWidgets.QMessageBox.information( self, "Camera calibration", "Camera calibration done !" )
 	# Toggle the chessboard preview
 	def ToggleChessboard( self ) :
 		if self.button_chessboard.isChecked() : self.chessboard_preview.show()
@@ -122,7 +117,6 @@ class CameraCalibrationWidget( QtWidgets.QWidget ) :
 		Calibration.pattern_size = ( self.spinbox_pattern_rows.value(), self.spinbox_pattern_cols.value() )
 	# Close the widget
 	def closeEvent( self, event ) :
-		#FIXME: Wait for the calibration to be done...
 		# Stop image acquisition
 		self.camera.StopCapture()
 		# Close the chessboard preview window
