@@ -148,7 +148,7 @@ class ChessboardPreview( QtWidgets.QLabel ) :
 	# Detect the chessboard on the image and display the result
 	def UpdateImage( self ) :
 		# Preview the calibration chessboard on the image
-		image = Calibration.PreviewChessboard( self.parent.image )
+		image = Calibration.PreviewChessboard( np.copy(self.parent.image) )
 		# Convert image color format from BGR to RGB
 		image = cv2.cvtColor( image, cv2.COLOR_BGR2RGB )
 		# Get the pointer of the Qt image data
